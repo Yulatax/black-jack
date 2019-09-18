@@ -2,9 +2,49 @@ require_relative 'card'
 
 class Deck
 
-  @@deck = []
+  attr_reader :cards
 
-  def create_deck
+  def initialize
+    @cards = []
+    @faces = faces_array
+    @suits = suits_array
+  end
 
+  def build_deck
+    @faces.each do |face|
+      @suits.each do |suit|
+        @cards << Card.new({face: face, suit: suit})
+      end
+    end
+    @cards.shuffle!
+  end
+
+  def show_deck
+    @cards.each {|card| puts card.name}
+  end
+
+  def take_card
+    @cards.pop
+  end
+
+  private
+
+  def faces_array
+    %w[2 3 4 5 6 7 8 9 10 J Q K A]
+  end
+
+  def suits_array
+    %w[+ <3 ^ <>]
   end
 end
+
+deck = Deck.new
+deck.build_deck
+deck.show_deck
+
+2.times { deck.take_card }
+p deck.cards.length
+
+deck = Deck.new
+deck.build_deck
+p deck.cards.length
