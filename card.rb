@@ -1,5 +1,5 @@
 class Card
-  attr_reader :name, :value
+  attr_reader :name, :value, :face
 
   def initialize(args = {})
     @face = args[:face]
@@ -17,6 +17,6 @@ class Card
   def set_value
     return 10 if ['J', 'Q', 'K'].include?(@face)
     return 11 if @face == 'A'
-    @face
+    @face.to_i
   end
 end

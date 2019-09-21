@@ -5,9 +5,9 @@ class Deck
   attr_reader :cards
 
   def initialize
-    @cards = []
     @faces = faces_array
     @suits = suits_array
+    @cards = []
   end
 
   def build_deck
@@ -38,13 +38,13 @@ class Deck
   end
 end
 
-deck = Deck.new
-deck.build_deck
-deck.show_deck
-
-2.times { deck.take_card }
-p deck.cards.length
-
-deck = Deck.new
-deck.build_deck
-p deck.cards.length
+# deck = Deck.new
+# deck.build_deck
+# deck.show_deck
+#
+# 2.times { deck.take_card }
+# p deck.cards.length
+#
+# deck = Deck.new
+# deck.build_deck
+# p deck.cards.length
