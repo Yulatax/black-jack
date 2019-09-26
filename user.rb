@@ -1,8 +1,9 @@
+# frozen_string_literal: true
+
 require_relative 'bank_module'
 require_relative 'hand'
 
 class User
-
   MAX_HAND_LENGTH = 3
 
   include Bank
@@ -18,10 +19,10 @@ class User
   end
 
   def display_hand(show = false)
-    if self.name == 'Dealer' && !show
-      puts "#{self.name}: #{hand.map { '*' }.join}, points: **"
+    if name == 'Dealer' && !show
+      puts "#{name}: #{hand.map { '*' }.join}, points: **"
     else
-      puts "#{self.name}: #{self.cards}, points: #{self.points}"
+      puts "#{name}: #{cards}, points: #{points}"
     end
   end
 
@@ -30,6 +31,6 @@ class User
   end
 
   def hand_limit?
-    self.hand.length == MAX_HAND_LENGTH
+    hand.length == MAX_HAND_LENGTH
   end
 end

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class Card
   attr_reader :name, :value, :face
 
@@ -15,8 +17,9 @@ class Card
   end
 
   def set_value
-    return 10 if ['J', 'Q', 'K'].include?(@face)
+    return 10 if %w[J Q K].include?(@face)
     return 11 if @face == 'A'
+
     @face.to_i
   end
 end

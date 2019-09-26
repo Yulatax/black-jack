@@ -1,9 +1,10 @@
+# frozen_string_literal: true
+
 require_relative 'dealer'
 require_relative 'game'
 require_relative 'player'
 
 class GameInterface
-
   def initialize
     @dealer = Dealer.new
   end

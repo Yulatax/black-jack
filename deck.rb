@@ -1,7 +1,8 @@
+# frozen_string_literal: true
+
 require_relative 'card'
 
 class Deck
-
   attr_reader :cards
 
   def initialize
@@ -11,7 +12,7 @@ class Deck
   end
 
   def show_deck
-    @cards.each {|card| puts card.name}
+    @cards.each { |card| puts card.name }
   end
 
   def take_card
@@ -24,7 +25,7 @@ class Deck
     cards = []
     @faces.each do |face|
       @suits.each do |suit|
-        cards << Card.new({face: face, suit: suit})
+        cards << Card.new(face: face, suit: suit)
       end
     end
     cards.shuffle!
@@ -38,14 +39,3 @@ class Deck
     %w[+ <3 ^ <>]
   end
 end
-
-# deck = Deck.new
-# deck.build_deck
-# deck.show_deck
-#
-# 2.times { deck.take_card }
-# p deck.cards.length
-#
-# deck = Deck.new
-# deck.build_deck
-# p deck.cards.length

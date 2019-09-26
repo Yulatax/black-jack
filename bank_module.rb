@@ -1,5 +1,6 @@
-module Bank
+# frozen_string_literal: true
 
+module Bank
   attr_accessor :bank
 
   def increase_bank(sum)

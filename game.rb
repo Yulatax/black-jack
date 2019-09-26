@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require_relative 'bank_module'
 require_relative 'deck'
 
@@ -65,21 +67,21 @@ class Game
     choice = @player.actions[actions.to_i]
 
     case choice
-      when 'skip action'
-        skip_action
-      when 'add card'
-        add_card
-      when 'open cards'
-        @finish = true 
-      else
-        puts 'Choose action or enter 0 to exit'
+    when 'skip action'
+      skip_action
+    when 'add card'
+      add_card
+    when 'open cards'
+      @finish = true
+    else
+      puts 'Choose action or enter 0 to exit'
     end
   end
 
   def actions
     txt = "\n#{@player.name}, choose your action, please: \n"
-    @player.actions.each_with_index do | action, index |
-        txt += "#{index} - #{action}\n"
+    @player.actions.each_with_index do |action, index|
+      txt += "#{index} - #{action}\n"
     end
     puts txt
     gets.chomp
@@ -91,7 +93,7 @@ class Game
 
   def contribute_to_game_bank(user, sum)
     user.reduce_bank(sum)
-    self.increase_bank(sum)
+    increase_bank(sum)
   end
 
   def skip_action
@@ -113,7 +115,7 @@ class Game
 
   def dealer_action
     return @finish = true if hand_limit_reached? || @dealer.points == BLACKJACK
-    
+
     if @dealer.points > 17 && @dealer.actions.include?('skip action')
       puts "\nDealer skips an action!\n"
       @dealer.remove_action('skip action')
@@ -124,29 +126,38 @@ class Game
   end
 
   def dealer_add_card
-    if @dealer.hand.length == 2
-      take_card(@dealer)
-      puts "\nDealer has taken a card!\n"
-      @dealer.display_hand
-    end
+    return unless @dealer.hand.length == 2
+
+    take_card(@dealer)
+    puts "\nDealer has taken a card!\n"
+    @dealer.display_hand
   end
 
   def finish_game
     puts "\nGame results: \n"
     @result = define_winner
     users_summary
+    show_bank
   end
 
   def define_winner
     if player_win?
+      reward_winner(@player)
       'You are a winner!'
     elsif dealer_win?
+      reward_winner(@dealer)
       'Dealer is a winner!'
     elsif points_equal?
+      reward_users
       'Dead heat!'
     else
       'No winner!'
     end
+  end
+
+  def show_bank
+    puts "#{@player.name} bank: #{@player.bank}"
+    puts "Dealer bank: #{@dealer.bank}"
   end
 
   def points_equal?
@@ -165,5 +176,16 @@ class Game
 
   def points_in_boards?
     @dealer.points <= BLACKJACK && @player.points <= BLACKJACK
+  end
+
+  def reward_users
+    @dealer.increase_bank(@bank / 2)
+    @player.increase_bank(@bank / 2)
+    reduce_bank(@bank)
+  end
+
+  def reward_winner(winner)
+    winner.increase_bank(@bank)
+    reduce_bank(@bank)
   end
 end

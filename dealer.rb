@@ -1,7 +1,8 @@
+# frozen_string_literal: true
+
 require_relative 'user'
 
 class Dealer < User
-
   attr_reader :actions
 
   def initialize
@@ -15,7 +16,7 @@ class Dealer < User
   end
 
   def remove_action(user_action)
-    @actions.delete_if { |action| action == user_action}
+    @actions.delete_if { |action| action == user_action }
   end
 
   private

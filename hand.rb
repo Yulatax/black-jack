@@ -1,7 +1,8 @@
+# frozen_string_literal: true
+
 require_relative 'deck'
 
 module Hand
-
   attr_accessor :hand
 
   def cards
@@ -16,7 +17,7 @@ module Hand
   def points
     points = 0
     @hand.each do |card|
-      card.face == 'A'? points += ace_value(points, card.value) : points += card.value
+      points += card.face == 'A' ? ace_value(points, card.value) : card.value
     end
     points
   end
@@ -24,6 +25,6 @@ module Hand
   private
 
   def ace_value(points, card_value)
-    points + card_value <= 21? card_value : 1
+    points + card_value <= 21 ? card_value : 1
   end
 end
