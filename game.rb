@@ -4,31 +4,50 @@ require_relative 'deck'
 class Game
   include Bank
 
+  BLACKJACK = 21
+
+  attr_reader :player, :dealer
+
   def initialize(args = {})
     @bank = 0
     @player = args[:player]
     @dealer = args[:dealer]
-    @deck = Deck.new
-    @deck.build_deck
   end
 
   def run
-    card_distribution
-    display_cards
-    bank_contribution
-    user_action
+    @finish = false
+    start
+    loop do
+      break if @finish
+
+      user_action
+    end
+    finish_game
+    @result
   end
 
   private
 
+  def start
+    @deck = Deck.new
+    @player.restore_actions
+    @dealer.restore_actions
+    card_distribution
+    @player.display_hand
+    @dealer.display_hand
+    bank_contribution
+  end
+
   def card_distribution
+    @player.clear_hand
+    @dealer.clear_hand
     2.times { take_card(@player) }
     2.times { take_card(@dealer) }
   end
 
-  def display_cards
-    puts "Your cards: #{@player.cards}, points: #{@player.points}"
-    puts "Dealer's cards: #{@dealer.cards}, points: #{@dealer.points}"
+  def users_summary
+    @player.display_hand
+    @dealer.display_hand(true)
   end
 
   def bank_contribution
@@ -36,29 +55,33 @@ class Game
     contribute_to_game_bank(@dealer, 10)
   end
 
+  def hand_limit_reached?
+    @player.hand_limit? && @dealer.hand_limit?
+  end
+
   def user_action
-    choice = actions.to_i
-    break if choice.zero?
+    return @finish = true if hand_limit_reached?
+
+    choice = @player.actions[actions.to_i]
 
     case choice
-    when 1
-      puts 'Dealer plays'
-    when 2
-      puts 'Take a card'
-    when 3
-      puts 'Open cards'
-    else
-      puts 'Choose action or enter 0 to exit'
+      when 'skip action'
+        skip_action
+      when 'add card'
+        add_card
+      when 'open cards'
+        @finish = true 
+      else
+        puts 'Choose action or enter 0 to exit'
     end
   end
 
   def actions
-    puts "\nYour action now:
-    1 - skip action
-    2 - add card
-    3 - open cards
-    0 - exit
-    \n"
+    txt = "\n#{@player.name}, choose your action, please: \n"
+    @player.actions.each_with_index do | action, index |
+        txt += "#{index} - #{action}\n"
+    end
+    puts txt
     gets.chomp
   end
 
@@ -69,5 +92,78 @@ class Game
   def contribute_to_game_bank(user, sum)
     user.reduce_bank(sum)
     self.increase_bank(sum)
+  end
+
+  def skip_action
+    @player.remove_action('skip action')
+    puts "\nDealer plays...\n"
+    dealer_action
+  end
+
+  def add_card
+    if @player.hand.length == 2
+      take_card(@player)
+      @player.remove_action('add card')
+      @player.display_hand
+      dealer_action
+    else
+      user_action
+    end
+  end
+
+  def dealer_action
+    return @finish = true if hand_limit_reached? || @dealer.points == BLACKJACK
+    
+    if @dealer.points > 17 && @dealer.actions.include?('skip action')
+      puts "\nDealer skips an action!\n"
+      @dealer.remove_action('skip action')
+    else
+      dealer_add_card
+    end
+    user_action
+  end
+
+  def dealer_add_card
+    if @dealer.hand.length == 2
+      take_card(@dealer)
+      puts "\nDealer has taken a card!\n"
+      @dealer.display_hand
+    end
+  end
+
+  def finish_game
+    puts "\nGame results: \n"
+    @result = define_winner
+    users_summary
+  end
+
+  def define_winner
+    if player_win?
+      'You are a winner!'
+    elsif dealer_win?
+      'Dealer is a winner!'
+    elsif points_equal?
+      'Dead heat!'
+    else
+      'No winner!'
+    end
+  end
+
+  def points_equal?
+    @player.points == @dealer.points
+  end
+
+  def player_win?
+    (@player.points > @dealer.points && points_in_boards?) ||
+      (@dealer.points > BLACKJACK && @player.points < BLACKJACK)
+  end
+
+  def dealer_win?
+    (@dealer.points > @player.points && points_in_boards?) ||
+      (@dealer.points < BLACKJACK && @player.points > BLACKJACK)
+  end
+
+  def points_in_boards?
+    @dealer.points <= BLACKJACK && @player.points <= BLACKJACK
   end
 end

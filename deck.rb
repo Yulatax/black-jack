@@ -7,16 +7,7 @@ class Deck
   def initialize
     @faces = faces_array
     @suits = suits_array
-    @cards = []
-  end
-
-  def build_deck
-    @faces.each do |face|
-      @suits.each do |suit|
-        @cards << Card.new({face: face, suit: suit})
-      end
-    end
-    @cards.shuffle!
+    @cards = build_deck
   end
 
   def show_deck
@@ -28,6 +19,16 @@ class Deck
   end
 
   private
+
+  def build_deck
+    cards = []
+    @faces.each do |face|
+      @suits.each do |suit|
+        cards << Card.new({face: face, suit: suit})
+      end
+    end
+    cards.shuffle!
+  end
 
   def faces_array
     %w[2 3 4 5 6 7 8 9 10 J Q K A]

@@ -16,11 +16,7 @@ module Hand
   def points
     points = 0
     @hand.each do |card|
-      if card.face == 'A'
-        points += ace_value(points, card.value)
-      else
-        points += card.value
-      end
+      card.face == 'A'? points += ace_value(points, card.value) : points += card.value
     end
     points
   end
