@@ -1,33 +1,27 @@
 # frozen_string_literal: true
 
-require_relative 'dealer'
 require_relative 'game'
-require_relative 'player'
 
 class GameInterface
+
   def initialize
-    @dealer = Dealer.new
+    greeting
+    @player_name = player_name
+    @game = Game.new(@player_name)
   end
 
   def play
-    introduction
+    start_notification
     loop do
       start_game
-      result = @game.run
-      finish_game(result)
-      break if exit_game? || user_bankrupt?
+      run_game
+      finish_game(@winner)
+      break if exit_game? || @game.user_bankrupt?
     end
     bye
   end
 
   private
-
-  def introduction
-    greeting
-    @player = Player.new(player_name)
-    @game = Game.new(dealer: @dealer, player: @player)
-    start_notification
-  end
 
   def greeting
     puts 'Welcome to Black Jack!'
@@ -39,38 +33,66 @@ class GameInterface
   end
 
   def start_notification
-    puts "\nHi, #{@player.name}. Game started!\n"
+    puts "\nHi, #{@player_name}. Game started!\n"
   end
 
   def start_game
     @game.start
-    users_summary(false)
+    puts users_summary(false)
+  end
+
+  def run_game
+    loop do
+      user_plays
+      next if @game.next?
+      break if stop?
+
+      dealer_plays
+      break if stop?
+    end
+    @winner = @game.define_winner
   end
 
   def users_summary(flag)
-    puts @player.user_hand
-    puts @dealer.user_hand(flag)
+    puts @game.player_summary
+    puts @game.dealer_summary(flag)
+  end
+
+  def choose_action
+    puts @game.actions
+    gets.chomp
+  end
+
+  def user_plays
+    action = @game.define_choice(choose_action)
+    @game.user_action(action)
+    puts @game.player_summary
+  end
+
+  def dealer_plays
+    puts "\nDealer plays...\n"
+    @game.dealer_action
+    puts @game.dealer_summary(false)
+  end
+
+  def stop?
+    @game.stop?
   end
 
   def finish_game(result)
     puts "\nGame results: \n"
-    users_summary(true)
+    puts users_summary(true)
     show_bank
     puts "#{result}"
   end
 
   def show_bank
-    puts "#{@player.name} bank: #{@player.bank}"
-    puts "Dealer bank: #{@dealer.bank}"
+    puts @game.bank
   end
 
   def exit_game?
     puts 'Start new game? Enter any key or 1 to exit.'
     gets.chomp.to_i == 1
-  end
-
-  def user_bankrupt?
-    @player.bank.zero? || @dealer.bank.zero?
   end
 
   def bye

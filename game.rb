@@ -2,6 +2,8 @@
 
 require_relative 'bank_module'
 require_relative 'deck'
+require_relative 'player'
+require_relative 'dealer'
 
 class Game
   include Bank
@@ -10,10 +12,10 @@ class Game
 
   attr_reader :player, :dealer
 
-  def initialize(args = {})
+  def initialize(player_name)
     @bank = 0
-    @player = args[:player]
-    @dealer = args[:dealer]
+    @player = Player.new(player_name)
+    @dealer = Dealer.new
   end
 
   def start
@@ -22,16 +24,87 @@ class Game
     @dealer.restore_actions
     card_distribution
     bank_contribution
+    @finish = false
   end
 
-  def run
-    @finish = false
-    loop do
-      break if @finish
+  def player_summary
+    "#{@player.user_hand}"
+  end
 
-      user_action
+  def dealer_summary(flag)
+    "#{@dealer.user_hand(flag)}"
+  end
+
+  def actions
+    txt = "\n#{@player.name}, choose your action, please: \n"
+    @player.actions.each_with_index do |action, index|
+      txt += "#{index} - #{action}\n"
     end
-    @result = define_winner
+    txt
+  end
+
+  def define_choice(action)
+    @player.actions[action.to_i]
+  end
+
+  def user_action(action)
+    return @finish = true if hand_limit_reached?
+
+    @next = false
+
+    case action
+    when 'skip action'
+      skip_action
+    when 'add card'
+      add_card
+    when 'open cards'
+      @finish = true
+    else
+      puts 'Choose action or enter 0 to exit'
+      @next = true
+    end
+  end
+
+  def dealer_action
+    return @finish = true if hand_limit_reached? || @dealer.points == BLACKJACK
+
+    if @dealer.points > 17 && @dealer.actions.include?('skip action')
+      puts "\nDealer skips an action!\n"
+      @dealer.remove_action('skip action')
+    else
+      dealer_add_card
+    end
+  end
+
+  def stop?
+    @finish
+  end
+
+  def next?
+    @next
+  end
+
+  def define_winner
+    if player_win?
+      reward_winner(@player)
+      'You are a winner!'
+    elsif dealer_win?
+      reward_winner(@dealer)
+      'Dealer is a winner!'
+    elsif points_equal?
+      reward_users
+      'Dead heat!'
+    else
+      'No winner!'
+    end
+  end
+
+  def user_bankrupt?
+    @player.bank.zero? || @dealer.bank.zero?
+  end
+
+  def bank
+    "#{@player.name} bank: #{@player.bank}\nDealer bank: #{@dealer.bank}"
   end
 
   private
@@ -61,59 +134,15 @@ class Game
     @player.hand_limit? && @dealer.hand_limit?
   end
 
-  def user_action
-    return @finish = true if hand_limit_reached?
-
-    choice = @player.actions[actions.to_i]
-
-    case choice
-    when 'skip action'
-      skip_action
-    when 'add card'
-      add_card
-    when 'open cards'
-      @finish = true
-    else
-      puts 'Choose action or enter 0 to exit'
-    end
-  end
-
-  def actions
-    txt = "\n#{@player.name}, choose your action, please: \n"
-    @player.actions.each_with_index do |action, index|
-      txt += "#{index} - #{action}\n"
-    end
-    puts txt
-    gets.chomp
-  end
-
   def skip_action
     @player.remove_action('skip action')
-    puts "\nDealer plays...\n"
-    dealer_action
   end
 
   def add_card
-    if @player.hand.length == 2
-      take_card(@player)
-      @player.remove_action('add card')
-      puts @player.user_hand
-      dealer_action
-    else
-      user_action
-    end
-  end
+    return if @player.hand.length > 2
 
-  def dealer_action
-    return @finish = true if hand_limit_reached? || @dealer.points == BLACKJACK
-
-    if @dealer.points > 17 && @dealer.actions.include?('skip action')
-      puts "\nDealer skips an action!\n"
-      @dealer.remove_action('skip action')
-    else
-      dealer_add_card
-    end
-    user_action
+    take_card(@player)
+    @player.remove_action('add card')
   end
 
   def dealer_add_card
@@ -121,22 +150,6 @@ class Game
 
     take_card(@dealer)
     puts "\nDealer has taken a card!\n"
-    puts @dealer.user_hand
-  end
-
-  def define_winner
-    if player_win?
-      reward_winner(@player)
-      'You are a winner!'
-    elsif dealer_win?
-      reward_winner(@dealer)
-      'Dealer is a winner!'
-    elsif points_equal?
-      reward_users
-      'Dead heat!'
-    else
-      'No winner!'
-    end
   end
 
   def points_equal?
