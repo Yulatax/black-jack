@@ -6,11 +6,6 @@ module Hand
   attr_accessor :hand
 
   def cards
-    # if self.name == 'Dealer'
-    #   hand.map { '*' }.join(' ')
-    # else
-    #   hand.map(&:name).join(' ')
-    # end
     hand.map(&:name).join(' ')
   end
 

@@ -18,11 +18,11 @@ class User
     @hand = []
   end
 
-  def display_hand(show = false)
-    if name == 'Dealer' && !show
-      puts "#{name}: #{hand.map { '*' }.join}, points: **"
+  def user_hand(flag = false)
+    if name == 'Dealer' && !flag
+      "#{name}: #{hand.map { '*' }.join}, points: **"
     else
-      puts "#{name}: #{cards}, points: #{points}"
+      "#{name}: #{cards}, points: #{points}"
     end
   end
 

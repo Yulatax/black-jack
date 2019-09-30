@@ -16,29 +16,25 @@ class Game
     @dealer = args[:dealer]
   end
 
-  def run
-    @finish = false
-    start
-    loop do
-      break if @finish
-
-      user_action
-    end
-    finish_game
-    @result
-  end
-
-  private
-
   def start
     @deck = Deck.new
     @player.restore_actions
     @dealer.restore_actions
     card_distribution
-    @player.display_hand
-    @dealer.display_hand
     bank_contribution
   end
+
+  def run
+    @finish = false
+    loop do
+      break if @finish
+
+      user_action
+    end
+    @result = define_winner
+  end
+
+  private
 
   def card_distribution
     @player.clear_hand
@@ -47,14 +43,18 @@ class Game
     2.times { take_card(@dealer) }
   end
 
-  def users_summary
-    @player.display_hand
-    @dealer.display_hand(true)
-  end
-
   def bank_contribution
     contribute_to_game_bank(@player, 10)
     contribute_to_game_bank(@dealer, 10)
+  end
+
+  def take_card(user)
+    user.hand << @deck.take_card
+  end
+
+  def contribute_to_game_bank(user, sum)
+    user.reduce_bank(sum)
+    increase_bank(sum)
   end
 
   def hand_limit_reached?
@@ -87,15 +87,6 @@ class Game
     gets.chomp
   end
 
-  def take_card(user)
-    user.hand << @deck.take_card
-  end
-
-  def contribute_to_game_bank(user, sum)
-    user.reduce_bank(sum)
-    increase_bank(sum)
-  end
-
   def skip_action
     @player.remove_action('skip action')
     puts "\nDealer plays...\n"
@@ -106,7 +97,7 @@ class Game
     if @player.hand.length == 2
       take_card(@player)
       @player.remove_action('add card')
-      @player.display_hand
+      puts @player.user_hand
       dealer_action
     else
       user_action
@@ -130,14 +121,7 @@ class Game
 
     take_card(@dealer)
     puts "\nDealer has taken a card!\n"
-    @dealer.display_hand
-  end
-
-  def finish_game
-    puts "\nGame results: \n"
-    @result = define_winner
-    users_summary
-    show_bank
+    puts @dealer.user_hand
   end
 
   def define_winner
@@ -155,23 +139,18 @@ class Game
     end
   end
 
-  def show_bank
-    puts "#{@player.name} bank: #{@player.bank}"
-    puts "Dealer bank: #{@dealer.bank}"
-  end
-
   def points_equal?
     @player.points == @dealer.points
   end
 
   def player_win?
     (@player.points > @dealer.points && points_in_boards?) ||
-      (@dealer.points > BLACKJACK && @player.points < BLACKJACK)
+      (@dealer.points > BLACKJACK && @player.points <= BLACKJACK)
   end
 
   def dealer_win?
     (@dealer.points > @player.points && points_in_boards?) ||
-      (@dealer.points < BLACKJACK && @player.points > BLACKJACK)
+      (@dealer.points <= BLACKJACK && @player.points > BLACKJACK)
   end
 
   def points_in_boards?

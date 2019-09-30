@@ -12,7 +12,7 @@ class Deck
   end
 
   def show_deck
-    @cards.each { |card| puts card.name }
+    @cards.each(&:name)
   end
 
   def take_card
@@ -32,10 +32,10 @@ class Deck
   end
 
   def faces_array
-    %w[2 3 4 5 6 7 8 9 10 J Q K A]
+    Card::FACES
   end
 
   def suits_array
-    %w[+ <3 ^ <>]
+    Card::SUITS
   end
 end

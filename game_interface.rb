@@ -10,10 +10,11 @@ class GameInterface
   end
 
   def play
-    start
+    introduction
     loop do
+      start_game
       result = @game.run
-      puts result
+      finish_game(result)
       break if exit_game? || user_bankrupt?
     end
     bye
@@ -21,7 +22,7 @@ class GameInterface
 
   private
 
-  def start
+  def introduction
     greeting
     @player = Player.new(player_name)
     @game = Game.new(dealer: @dealer, player: @player)
@@ -38,7 +39,29 @@ class GameInterface
   end
 
   def start_notification
-    puts "Hi, #{@player.name}. Game started!"
+    puts "\nHi, #{@player.name}. Game started!\n"
+  end
+
+  def start_game
+    @game.start
+    users_summary(false)
+  end
+
+  def users_summary(flag)
+    puts @player.user_hand
+    puts @dealer.user_hand(flag)
+  end
+
+  def finish_game(result)
+    puts "\nGame results: \n"
+    users_summary(true)
+    show_bank
+    puts "#{result}"
+  end
+
+  def show_bank
+    puts "#{@player.name} bank: #{@player.bank}"
+    puts "Dealer bank: #{@dealer.bank}"
   end
 
   def exit_game?
