@@ -44,7 +44,12 @@ class GameInterface
   def run_game
     loop do
       user_plays
-      next if @game.next?
+      if @game.next?
+        puts 'Action is not available!'
+        next
+      else
+        puts @game.player_summary
+      end
       break if stop?
 
       dealer_plays
@@ -66,12 +71,12 @@ class GameInterface
   def user_plays
     action = @game.define_choice(choose_action)
     @game.user_action(action)
-    puts @game.player_summary
   end
 
   def dealer_plays
     puts "\nDealer plays...\n"
     @game.dealer_action
+    puts @game.dealer_action_text
     puts @game.dealer_summary(false)
   end
 

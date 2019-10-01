@@ -10,7 +10,7 @@ class Game
 
   BLACKJACK = 21
 
-  attr_reader :player, :dealer
+  attr_reader :player, :dealer, :dealer_action_text
 
   def initialize(player_name)
     @bank = 0
@@ -60,7 +60,6 @@ class Game
     when 'open cards'
       @finish = true
     else
-      puts 'Choose action or enter 0 to exit'
       @next = true
     end
   end
@@ -69,7 +68,7 @@ class Game
     return @finish = true if hand_limit_reached? || @dealer.points == BLACKJACK
 
     if @dealer.points > 17 && @dealer.actions.include?('skip action')
-      puts "\nDealer skips an action!\n"
+      @dealer_action_text = "\nDealer skips an action!\n"
       @dealer.remove_action('skip action')
     else
       dealer_add_card
@@ -147,9 +146,8 @@ class Game
 
   def dealer_add_card
     return unless @dealer.hand.length == 2
-
+    @dealer_action_text = "\nDealer has taken a card!\n"
     take_card(@dealer)
-    puts "\nDealer has taken a card!\n"
   end
 
   def points_equal?
